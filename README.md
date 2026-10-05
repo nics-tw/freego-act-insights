@@ -80,10 +80,8 @@ npm run generate:all
 
 舊的 [examples/results](examples/results) 保留作為歷史 JSON 結果／回歸驗證基準，新 FreeGo 產物不再寫入此位置；HTML 位於 [reports](reports)，獨立 axe-core 範例輸出路徑不變。
 
-## 名稱與相容性
+## 相容性
 
-- 專案名稱：**FreeGo ACT Insights**；建議 GitHub Repository 名稱：`freego-act-insights`。
-- 套件識別名稱：`freego-act-insights`，保留 `private: true` 避免誤發布至 npm；這不限制 GitHub 開源。
 - 保留既有 `testRunner` API、npm 指令及報告輸出路徑，避免更名影響原有流程。
 - 本專案沿用 [ACT Rules TestRunner](https://github.com/act-rules/testrunner) 的測試執行基礎，並加入 FreeGo 分析與報告流程。新的 GitHub 網址確定後，再補上本專案的 repository、homepage 與 issues 設定。
 
