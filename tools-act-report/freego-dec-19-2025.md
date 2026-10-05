@@ -1,0 +1,904 @@
+# Freego Dec 19 2025 — ACT Rules 實作報告
+
+| 欄位 | 資訊 |
+|------|------|
+| 工具名稱 | Freego |
+| 版本 | Dec 19 2025 |
+| 開發者 | [中華民國資訊軟體協會（中華軟協）](https://www.cisanet.org.tw/) |
+| 開發語言 | Java |
+| 工具類型 | Automated |
+| 標準 | WCAG 2.1 Level A, AA, AAA |
+| W3C ACT 頁面 | 尚未登錄 |
+| 官方網站 | https://accessibility.moda.gov.tw/Download/Category/70/1 |
+| EARL 測試報告 | ../examples/results/freego.json |
+| 規則邏輯文件 | https://accessibility.moda.gov.tw/Accessible/Guide/68 |
+| 最後更新 | 2026-09-15 |
+| 一致規則數 | 1 |
+| 部分一致規則數 | 31 |
+
+> **結果說明：** `Consistent` 表示該 ACT 規則下所有已核准 testcase 與所有對應 FreeGo 檢測碼均符合預期；`Partial` 表示至少一筆結果不一致或未測。ACT 預期為 `inapplicable` 而 FreeGo 回報 `passed` 時視為一致。
+
+---
+
+## 實作規則總表
+
+| # | 規則名稱 | ACT 規則 ID | FreeGo 檢測碼 | 一致性 |
+|---|---------|------------|---------------|--------|
+| 1 | [Role attribute has valid value](https://www.w3.org/WAI/standards-guidelines/act/rules/674b10/) | [674b10](https://www.w3.org/WAI/standards-guidelines/act/rules/674b10/) | `HM1410200C` | ⚠️ Partial |
+| 2 | [ARIA state or property has valid value](https://www.w3.org/WAI/standards-guidelines/act/rules/6a7281/) | [6a7281](https://www.w3.org/WAI/standards-guidelines/act/rules/6a7281/) | `HM1410200C` | ⚠️ Partial |
+| 3 | [ARIA attribute is defined in WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/act/rules/5f99a7/) | [5f99a7](https://www.w3.org/WAI/standards-guidelines/act/rules/5f99a7/) | `HM1410200C` | ⚠️ Partial |
+| 4 | [Element with lang attribute has valid language tag](https://www.w3.org/WAI/standards-guidelines/act/rules/de46e4/) | [de46e4](https://www.w3.org/WAI/standards-guidelines/act/rules/de46e4/) | `HM1310100C`, `HM2310200C` | ⚠️ Partial |
+| 5 | [Menuitem has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/m6b1q3/) | [m6b1q3](https://www.w3.org/WAI/standards-guidelines/act/rules/m6b1q3/) | `HM1410200C` | ⚠️ Partial |
+| 6 | [Button has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/97a4e1/proposed/) | [97a4e1](https://www.w3.org/WAI/standards-guidelines/act/rules/97a4e1/proposed/) | `HM1130104C`, `HM1410200C` | ⚠️ Partial |
+| 7 | [Form field has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/e086e5/proposed/) | [e086e5](https://www.w3.org/WAI/standards-guidelines/act/rules/e086e5/proposed/) | `HM1130104C`, `HM1410200C` | ⚠️ Partial |
+| 8 | [HTML page `lang` attribute has valid language tag](https://www.w3.org/WAI/standards-guidelines/act/rules/bf051a/proposed/) | [bf051a](https://www.w3.org/WAI/standards-guidelines/act/rules/bf051a/proposed/) | `HM1310100C` | ⚠️ Partial |
+| 9 | [HTML page has non-empty title](https://www.w3.org/WAI/standards-guidelines/act/rules/2779a5/proposed/) | [2779a5](https://www.w3.org/WAI/standards-guidelines/act/rules/2779a5/proposed/) | `HM1240200C` | ⚠️ Partial |
+| 10 | [Image button has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/59796f/proposed/) | [59796f](https://www.w3.org/WAI/standards-guidelines/act/rules/59796f/proposed/) | `HM1110104C`, `HM1410200C` | ⚠️ Partial |
+| 11 | [Image has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/23a2a8/proposed/) | [23a2a8](https://www.w3.org/WAI/standards-guidelines/act/rules/23a2a8/proposed/) | `HM1110100C` | ⚠️ Partial |
+| 12 | [Link has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/c487ae/proposed/) | [c487ae](https://www.w3.org/WAI/standards-guidelines/act/rules/c487ae/proposed/) | `HM1110101C`, `HM1240401C`, `HM1410200C`, `HM3240900C` | ⚠️ Partial |
+| 13 | [Element with presentational children has no focusable content](https://www.w3.org/WAI/standards-guidelines/act/rules/307n5z/proposed/) | [307n5z](https://www.w3.org/WAI/standards-guidelines/act/rules/307n5z/proposed/) | `HM1410200C` | ⚠️ Partial |
+| 14 | [Headers attribute specified on a cell refers to cells in the same table element](https://www.w3.org/WAI/standards-guidelines/act/rules/a25f45/proposed/) | [a25f45](https://www.w3.org/WAI/standards-guidelines/act/rules/a25f45/proposed/) | `HM1130101C` | ⚠️ Partial |
+| 15 | [Element with aria-hidden has no content in sequential focus navigation](https://www.w3.org/WAI/standards-guidelines/act/rules/6cfa84/proposed/) | [6cfa84](https://www.w3.org/WAI/standards-guidelines/act/rules/6cfa84/proposed/) | `HM1410200C` | ⚠️ Partial |
+| 16 | [Object element rendering non-text content has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/8fc3b6/proposed/) | [8fc3b6](https://www.w3.org/WAI/standards-guidelines/act/rules/8fc3b6/proposed/) | `HM1110105C` | ⚠️ Partial |
+| 17 | [HTML page has lang attribute](https://www.w3.org/WAI/standards-guidelines/act/rules/b5c3f8/proposed/) | [b5c3f8](https://www.w3.org/WAI/standards-guidelines/act/rules/b5c3f8/proposed/) | `HM1310100C` | ✅ Consistent |
+| 18 | [HTML page title is descriptive](https://www.w3.org/WAI/standards-guidelines/act/rules/c4a8a4/proposed/) | [c4a8a4](https://www.w3.org/WAI/standards-guidelines/act/rules/c4a8a4/proposed/) | `HM1240200C` | ⚠️ Partial |
+| 19 | [Image accessible name is descriptive](https://www.w3.org/WAI/standards-guidelines/act/rules/qt1vmo/proposed/) | [qt1vmo](https://www.w3.org/WAI/standards-guidelines/act/rules/qt1vmo/proposed/) | `HM1110100C` | ⚠️ Partial |
+| 20 | [Element with role attribute has required states and properties](https://www.w3.org/WAI/standards-guidelines/act/rules/4e8ab6/proposed/) | [4e8ab6](https://www.w3.org/WAI/standards-guidelines/act/rules/4e8ab6/proposed/) | `HM1410200C` | ⚠️ Partial |
+| 21 | [Summary element has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/2t702h/proposed/) | [2t702h](https://www.w3.org/WAI/standards-guidelines/act/rules/2t702h/proposed/) | `HM1410200C` | ⚠️ Partial |
+| 22 | [ARIA state or property is permitted](https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/) | [5c01ea](https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/) | `HM1410200C` | ⚠️ Partial |
+| 23 | [Document has heading for non-repeated content](https://www.w3.org/WAI/standards-guidelines/act/rules/047fe0/proposed/) | [047fe0](https://www.w3.org/WAI/standards-guidelines/act/rules/047fe0/proposed/) | `HM3241000C` | ⚠️ Partial |
+| 24 | [HTML element language subtag matches language](https://www.w3.org/WAI/standards-guidelines/act/rules/off6ek/proposed/) | [off6ek](https://www.w3.org/WAI/standards-guidelines/act/rules/off6ek/proposed/) | `HM2310200C` | ⚠️ Partial |
+| 25 | [HTML page language subtag matches default language](https://www.w3.org/WAI/standards-guidelines/act/rules/ucwvc8/proposed/) | [ucwvc8](https://www.w3.org/WAI/standards-guidelines/act/rules/ucwvc8/proposed/) | `HM1310100C` | ⚠️ Partial |
+| 26 | [Iframe elements with identical accessible names have equivalent purpose](https://www.w3.org/WAI/standards-guidelines/act/rules/4b1c6c/proposed/) | [4b1c6c](https://www.w3.org/WAI/standards-guidelines/act/rules/4b1c6c/proposed/) | `HM1410201C` | ⚠️ Partial |
+| 27 | [Iframe element has non-empty accessible name](https://www.w3.org/WAI/standards-guidelines/act/rules/cae760/proposed/) | [cae760](https://www.w3.org/WAI/standards-guidelines/act/rules/cae760/proposed/) | `HM1410201C` | ⚠️ Partial |
+| 28 | [Image not in the accessibility tree is decorative](https://www.w3.org/WAI/standards-guidelines/act/rules/e88epe/proposed/) | [e88epe](https://www.w3.org/WAI/standards-guidelines/act/rules/e88epe/proposed/) | `HM1110106C` | ⚠️ Partial |
+| 29 | [Link is descriptive](https://www.w3.org/WAI/standards-guidelines/act/rules/aizyf1/proposed/) | [aizyf1](https://www.w3.org/WAI/standards-guidelines/act/rules/aizyf1/proposed/) | `HM3240900C` | ⚠️ Partial |
+| 30 | [Link in context is descriptive](https://www.w3.org/WAI/standards-guidelines/act/rules/5effbb/proposed/) | [5effbb](https://www.w3.org/WAI/standards-guidelines/act/rules/5effbb/proposed/) | `HM1240401C`, `HM3240900C` | ⚠️ Partial |
+| 31 | [Links with identical accessible names and same context serve equivalent purpose](https://www.w3.org/WAI/standards-guidelines/act/rules/fd3a94/proposed/) | [fd3a94](https://www.w3.org/WAI/standards-guidelines/act/rules/fd3a94/proposed/) | `HM1240400C` | ⚠️ Partial |
+| 32 | [Table header cell has assigned cells](https://www.w3.org/WAI/standards-guidelines/act/rules/d0f69e/proposed/) | [d0f69e](https://www.w3.org/WAI/standards-guidelines/act/rules/d0f69e/proposed/) | `HM1130101C` | ⚠️ Partial |
+
+## 實作規則詳細表格
+
+### 規則 1：Role attribute has valid value
+
+- **ACT Rule ID:** [674b10](https://www.w3.org/WAI/standards-guidelines/act/rules/674b10/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/c181f7267bf9f4fc0f9ad9e2a69c1ad7da504f4d.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/9980fd3a6f30b20069618708b2c8fa79d444e0a4.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/8ee31c22ec3fa0bccf46e3f44e9a5d8e752bc776.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/4b0aaf07c6e9fb6ea3495dd9cecf55d47b9539b8.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/527c265ba570f0131dddef3687981b66f6dd156f.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/ebd0080bacb8debc7ad069072240657df38c3e2c.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/98f200a9611571fd8db46027c8d28616d94083c8.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/8f409b57b31bce96b6f256d0fa9cfabcd0b984ca.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/0b8e3a6fb2bfd495683f686cf99ea1e46f2074ed.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/575a5e323abe810450d5ff443a5fd614dae12257.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/674b10/351e4bd097e4e1217d64a6c32ae09987c8d4db4a.html) | inapplicable | passed | ✅ |
+
+### 規則 2：ARIA state or property has valid value
+
+- **ACT Rule ID:** [6a7281](https://www.w3.org/WAI/standards-guidelines/act/rules/6a7281/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/e970b77c1137e5fd4627f70663da4d1fcda36b23.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/db10f30be20aebf661f0b81b2c0cfc698b1453eb.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/766a5eb6a54c5b83a882a0d78731d808480a1b3e.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/38b0160bfc6c056fa0d02affbc02e49dce284467.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/e4b47e094d44a9f3b5b3fd5c157f3ef6679bede0.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/c27e7f509d546fa6aff12ca7aeace662d3fb1c7b.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/f78fb0548e68839232441636b6d8489ad17c50b5.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/83f5e9df90e96c1af508ad8b4e2cda78c0dae7c4.html) | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/0496ff9d59d514f97c8739004b2b941dd7ca97bf.html) | passed | passed | ✅ |
+| [Passed Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/ed053b32aa2b4453ddc225e45f7f1931f62c7f49.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/ce27fcdd85fbf37a953727cdc454f3e504041a31.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/1f586827cecc5b1b4d9f60dcaba1e77f4a90c54a.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/0959137934bd17ea8c95b86120b1c7331e4facc2.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/e1bd70b33e2d53e3b9bc105a5cad59a76b4c54d5.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/4078701ed7982e75316b51adb59b6d05c1583aa5.html) | failed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/88ff0942922e48b686413cf12cd0fd3510a8b29f.html) | failed | passed | ❌ |
+| [Failed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/b78f507edd1866cc5b1a7fae8b530da964b470fb.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/9d80b71ad39b258fb75db804867f189d76ecdab8.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/90428c9c8cc74d6a3047775637078366994a8e88.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/0b90f166412e03fa01b460aa1c8e68f722a47434.html) | inapplicable | passed | ✅ |
+
+### 規則 3：ARIA attribute is defined in WAI-ARIA
+
+- **ACT Rule ID:** [5f99a7](https://www.w3.org/WAI/standards-guidelines/act/rules/5f99a7/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/261dcd3214e87532fc2f9c8db7fdce05de9e07f0.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/31ac49fcb186ee2a233355494fc5e774212ca3d7.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/3314945d4bbec5b34f9a3c2d90da7cb9f8e7ce5a.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/830f50dcf51acb0b97b948000d7c163e50858312.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/e145aafac5f00cabc7cb3d65a32f7fdb5ec1484d.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/b6acf7c4aab0cfdc9f996abc7961790cbc97f39e.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/d528a33258103014c0a03cf1e418ee0620f7b4f6.html) | inapplicable | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5f99a7/287a72860814f903d561dc3e7765f507ca041624.html) | passed | passed | ✅ |
+
+### 規則 4：Element with lang attribute has valid language tag
+
+- **ACT Rule ID:** [de46e4](https://www.w3.org/WAI/standards-guidelines/act/rules/de46e4/)
+- **FreeGo 檢測碼:** `HM1310100C`, `HM2310200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 3.1.2 → Reported: **3.1.1, 3.1.2**
+
+| 測試案例 | 預期結果 | `HM1310100C` | `HM2310200C` | 一致？ |
+|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/a746b387d13dc61266d1fcde19b91b89441b1be7.html) | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/1583a11fb07127fb3315fa19f3baaf876aa42aa4.html) | passed | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/034e1e1a46cfa6d3fe3bcc69ac45ffb6c5d55148.html) | passed | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/d8c5a59532ae0624edd875aea31ef39086873b7a.html) | passed | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/cecfce83c949d20c816a0e43cbc4c26a3468754b.html) | passed | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/b1765660b28464b5a73e502ef30b7370ba294ff5.html) | failed | passed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/49b66676ed867c75368e31c1e06b28255df8089e.html) | failed | passed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/78de8b1ca470302aebb53065c32eddf08da008b5.html) | failed | passed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/795698c08fc5d404b649d0c367bedc3e83462d43.html) | failed | passed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/d8ba52b5fa5e123def1f778821219aaec20ca0fe.html) | failed | passed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/61f81c57325a77a89481f036e4e2116399fb6714.html) | failed | passed | passed | ❌ |
+| [Failed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/5ba0306adadd581e4331b9415c2ef9f8ecccc0f2.html) | failed | passed | passed | ❌ |
+| [Failed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/915cdae554a817caa4792101fde1adf14563227d.html) | failed | passed | passed | ❌ |
+| [Failed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/50e733e0c505a556fc53e6265eb5b432823570f7.html) | failed | passed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/5b58b483fa53a6ff228c89a7fe57997664845663.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/d6606eb2863e2176f9beb914e5cfe70bce2d905e.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/a44f5e11d20feec4ae39e2db0336ddef0a8e04ec.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/471e3f82cdd9122e2886d2d7bcfc8cda1397a51d.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/de46e4/4fa5219cf39dc536c51d67f6c4f9f54271a8dcfa.html) | inapplicable | passed | passed | ✅ |
+
+### 規則 5：Menuitem has non-empty accessible name
+
+- **ACT Rule ID:** [m6b1q3](https://www.w3.org/WAI/standards-guidelines/act/rules/m6b1q3/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/895a5b0d06d892bc50351cfd2db426b31cfcc97f.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/78c41b8461997477cb7b6a9d163ba8a387ad56b8.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/83a0c030f9172c3d8d862d01138e75ec7aaf4f4e.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/c05155744a79e6ff72f1b691b8bae15338e8146b.html) | passed | failed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/f3a40579bcb3cab4f12a31639bc9dd0ca5c14d87.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/c261108b8bb62e118a47a52d0a157b4265a6e143.html) | failed | failed | ✅ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/4eec4a33bca54e6313e0af600af41797bb7c4213.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/m6b1q3/0edc121ac393fa9661fc1c18156e040775313779.html) | inapplicable | failed | ❌ |
+
+### 規則 6：Button has non-empty accessible name
+
+- **ACT Rule ID:** [97a4e1](https://www.w3.org/WAI/standards-guidelines/act/rules/97a4e1/proposed/)
+- **FreeGo 檢測碼:** `HM1130104C`, `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **1.3.1, 4.1.2**
+
+| 測試案例 | 預期結果 | `HM1130104C` | `HM1410200C` | 一致？ |
+|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/a4cc71b0434f71f4ea0069c409f73e0207dfb403.html) | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/d9adf41033a5b71a0730b6df8c1c7e01088e9022.html) | passed | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/3004e7b1a47b2e5a5c77b3eef36b50d495c9e4a1.html) | passed | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/ff4b76894bd9aaad29242e72fe93fd9798bf85af.html) | passed | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/5bfdf45a98f7d2f0e93a700f7ce0fe5f723bf0f7.html) | passed | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/00fe207175e40ddc81a86fb09504e5fa33b7dd0f.html) | passed | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/3fe70212e0020d7fa552b7c6c035a466c900c4b9.html) | passed | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/1ec8deb0b18514b612774d3af39b5ad41f2a792b.html) | failed | passed | failed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/2c5b0625e21b3503d1cd4c4daf53b15ae41c562d.html) | failed | passed | failed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/ffe1796f06e1082a8ddae54a471dcca66c783c4e.html) | failed | passed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/1a6035f4f09b339ac53bc547fc727a51ab05a3c6.html) | failed | passed | failed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/ac9a749a026c47209c34677ca6ac0dc093d24888.html) | failed | passed | failed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/0666607827b30150ed0a5be439f58623b3222131.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/14c51a76c14250316a756b7660b2489f18896d5a.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/096bf1e8eeb0b5633861389cb3fa3267649e396c.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/b6b0eec01fc2759e3335fa4e448e5772161a9da6.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/97a4e1/21bbd170c05cd535fd5096f9c7eebc54eb72d936.html) | inapplicable | passed | failed | ❌ |
+
+### 規則 7：Form field has non-empty accessible name
+
+- **ACT Rule ID:** [e086e5](https://www.w3.org/WAI/standards-guidelines/act/rules/e086e5/proposed/)
+- **FreeGo 檢測碼:** `HM1130104C`, `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **1.3.1, 4.1.2**
+
+| 測試案例 | 預期結果 | `HM1130104C` | `HM1410200C` | 一致？ |
+|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/933cad4e69415e2a2970832d2d60e2b854bca1b4.html) | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/366e62d83ede9df9fdad86cf7040600916bb065a.html) | passed | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/6726b79b0534d80f567c3e5fd7174962d411be95.html) | passed | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/2183d2e337eec311b7c2e06c2f9cec759913dba9.html) | passed | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/3aa8f45d7e358655c39708e2656a2c2d97e7dfa6.html) | passed | failed | passed | ❌ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/ca41ec5f1dba602b8b6e332ad524cbfc5cd1505e.html) | passed | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/09ea6ee13f7f26b0d6e3103946209ea0726876de.html) | passed | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/004258203c8bf167307b6ed79f765115d16a6357.html) | failed | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/5c0ba53d53cc9fd8627f224b39db30bd9ffa5757.html) | failed | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/80a5df2346e082cd0be260143ac9090a902bcf30.html) | failed | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/a59cf1abfabcb96ab4592966bb4a78e788b41017.html) | failed | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/552732aff853ed413ed7b5ff4a6202d11fd0c1a5.html) | failed | passed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/4246616cd947040f64dc183b66e1f6c30b2d7fbb.html) | failed | passed | passed | ❌ |
+| [Failed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/b0c554cfdddfdc0fe15923066b329868dd9e70c8.html) | failed | passed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/c828178c45e9299883296cf425144d2ae804fc27.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/43b93bc71597fdc7152a7920a78f27a3b27cf639.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/16a907322625e3b82c25f571eb9dd8fe897444f8.html) | inapplicable | failed | passed | ❌ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/d9ee6c2ae6da41521bd4ba0bf25c4b6bcd253f37.html) | passed | passed | passed | ✅ |
+| [Failed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/bd816c3ef10b8982f18411e1623887d2444d7311.html) | failed | failed | passed | ❌ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/cfb1790405bb1ff793ed15a73372d53e79d2d7e0.html) | passed | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/2243d6e9d1eb6938aff03536125ebc582440fbe7.html) | passed | passed | passed | ✅ |
+| [Failed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e086e5/1d9a4d0eba21c8bb02580c46142ec75842bd3557.html) | failed | failed | passed | ❌ |
+
+### 規則 8：HTML page `lang` attribute has valid language tag
+
+- **ACT Rule ID:** [bf051a](https://www.w3.org/WAI/standards-guidelines/act/rules/bf051a/proposed/)
+- **FreeGo 檢測碼:** `HM1310100C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 3.1.1 → Reported: **3.1.1**
+
+| 測試案例 | 預期結果 | `HM1310100C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/7d8c4fd028c504d10c4e5e9bd7183c139549e1a1.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/a49f11c86ad81c4d42700dfca58a7eeec377f02e.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/b7a35f8080e756776877bca013a910dafde8ef73.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/5c998eef8cb13a8f577dade1a3b9fe591bc69204.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/0f73e7179e17f050380f0ea350d2551611820fd5.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bf051a/b64d767d873269ff00966630e34ab198fc24368f.html) | failed | passed | ❌ |
+
+### 規則 9：HTML page has non-empty title
+
+- **ACT Rule ID:** [2779a5](https://www.w3.org/WAI/standards-guidelines/act/rules/2779a5/proposed/)
+- **FreeGo 檢測碼:** `HM1240200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.2 → Reported: **2.4.2**
+
+| 測試案例 | 預期結果 | `HM1240200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/7f9f315b5041f3726662bf269613c43678af99d4.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/64771c390e57375a822a7223362ea7bb859c0a96.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/6b3d2e2147cfc618b744f2dabfaf2e66327055d7.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/efa1e0438bb515332ec6b4d943044c336ca77fab.html) | passed | failed | ❌ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/0ad882dffaf6edd16058119e1c513b4746b0ac27.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/820fb18c9bb20fb1a940a0806a87c6f6e468bb5b.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/314d991fa5328e41f8a806bfbac84d748b41f7ed.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/5fd6fda771cf8810eef5166464622d6979e0406e.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/a14968698b0e95b6624f187d4538e320e4fa8952.html) | failed | failed | ✅ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/4eeff9c95f15e90ca5abc972079112d1ea5c3d51.html) | failed | failed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/94ff40484422832c2910086d4387163aa2d9dd7d.html) | passed | passed | ✅ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2779a5/9c5eeb535181f3709e13b548a04b9d0054532cdd.html) | failed | failed | ✅ |
+
+### 規則 10：Image button has non-empty accessible name
+
+- **ACT Rule ID:** [59796f](https://www.w3.org/WAI/standards-guidelines/act/rules/59796f/proposed/)
+- **FreeGo 檢測碼:** `HM1110104C`, `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.1.1, 4.1.2 → Reported: **1.1.1, 4.1.2**
+
+| 測試案例 | 預期結果 | `HM1110104C` | `HM1410200C` | 一致？ |
+|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/8c29bcb24ac0f448846a2ffdad4c9693d5aef8c6.html) | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/b413c09531b239e27bcf79cb57302b429ef59fe6.html) | passed | failed | passed | ❌ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/cab9b2d06e5a44e2056ccbdbb7096f55ab42859c.html) | passed | failed | passed | ❌ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/7d97d6b2f3fa16760bf66026691281a8179f3260.html) | passed | failed | passed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/04342a3834e0003f3057807937d617e432e83d33.html) | failed | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/5c71cdabc04f9038e21d872e20a516cb429a7619.html) | failed | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/0bbd55ba8e418361f99f717418206a37d57fd978.html) | failed | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/a4cc71b0434f71f4ea0069c409f73e0207dfb403.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/37cce377c874eec22d1137977d2b8f00ebc42ea8.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/9ceceeffee45fea0d16ce4d87d4c048f1a68ca93.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/ebd0080bacb8debc7ad069072240657df38c3e2c.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/59796f/ba176379d78ef73bf17c7703ca6b512463227d13.html) | inapplicable | passed | passed | ✅ |
+
+### 規則 11：Image has non-empty accessible name
+
+- **ACT Rule ID:** [23a2a8](https://www.w3.org/WAI/standards-guidelines/act/rules/23a2a8/proposed/)
+- **FreeGo 檢測碼:** `HM1110100C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.1.1 → Reported: **1.1.1**
+
+| 測試案例 | 預期結果 | `HM1110100C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/32bfac8a98cc212aa7bf9151bf40f665a7f51696.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/38cc6a87fcc81fcc2248f0cd74ca48396b7aa432.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/feb06eece7b158ab66a25bfa2c47a196309f0d93.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/40d83620b0bcbcf0e7380177384f48596823e7a9.html) | passed | failed | ❌ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/2f35ed62ed14afb6d9e8b886e95e846f0cfa0d2a.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/e8f40f5af06646ef15283302903f6c78f7d7a505.html) | passed | failed | ❌ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/13b8678881fba03e7465f82b5550abc5093f7968.html) | passed | failed | ❌ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/ba9cdf6d0c336f0abf7cd2992c4a2a62c6c719fd.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/8006d1541dc71b93e6ec4d101a386e0043d1a521.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/496963cfd35d4873c010469c47c84d4358fba035.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/fef9a3ad8b2f2a6beeaf44ef7dafce08e743ea67.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/b0348c1e6fced2df1ebd93caef4d383f6c7a0461.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/d70470a37db713810be85275e5d0c698f85ab320.html) | failed | failed | ✅ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/cd3b3a4046451da9b9cc3e166c09d27583a2c30b.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/25e5364c0a1320a08e2742fa59a0f8627591bc61.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/e15b9aca4aaa53cb3a96ae48e78e1af064b9a01d.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/7d696551efaafa0da33bb6e56b8b43707c7c7de9.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/23a2a8/f7692caf5f8c788d58e1aeb8d4f1f240fafdfa91.html) | inapplicable | failed | ❌ |
+
+### 規則 12：Link has non-empty accessible name
+
+- **ACT Rule ID:** [c487ae](https://www.w3.org/WAI/standards-guidelines/act/rules/c487ae/proposed/)
+- **FreeGo 檢測碼:** `HM1110101C`, `HM1240401C`, `HM1410200C`, `HM3240900C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.4, 2.4.9, 4.1.2 → Reported: **1.1.1, 2.4.4, 2.4.9, 4.1.2**
+
+| 測試案例 | 預期結果 | `HM1110101C` | `HM1240401C` | `HM1410200C` | `HM3240900C` | 一致？ |
+|---------|---------|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/a8cc66de4d60e34c7ee0d09fd6ab965ac23d9b4f.html) | passed | passed | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/d761116217a5875490cd7a2adf0219bdb1bff5cf.html) | passed | passed | passed | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/ada7438401aba500eb03f678b05b9821a758336a.html) | passed | passed | passed | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/d13a75a2a0b539a39063eb946505e3d3dd5aeef1.html) | passed | passed | failed | passed | passed | ❌ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/4493c4b542c8e059e8423c77945ce5895428ab88.html) | passed | passed | failed | passed | passed | ❌ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/d6a239059266b317de6a6e73dbf443c5ca8a6f5f.html) | passed | passed | failed | passed | passed | ❌ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/5d16da98a4089b29ff76c611036c65e1c504c7bc.html) | passed | passed | passed | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/e277de30edb9e550d8f9d5a72e1e3adde961d01d.html) | passed | passed | failed | passed | passed | ❌ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/dee6c55162904cfb77c7f65614c4e6ae2baacea2.html) | passed | passed | passed | passed | passed | ✅ |
+| [Passed Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/b9a3949e2a7521698472a966c782434c4d9ce6fb.html) | passed | passed | passed | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/97b115a032fc4178230306e2d0f4e334b2cfe8a9.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/633d9136ef3e040b7653b287651c65e4302fe417.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/954326e5ba700d4616d924807f427002816e9fc3.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/e729027165e293dc32ea88b7264e4c62c306fdd5.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/e5b522e069394fa6666bef3746705b70b4628819.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/3f34996d204260b1b0b50fc8f77b10ab640ba303.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/7b6b235a0fd8bf9b2023a5d0e446f7ed46e1a40f.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/8816eee206375f88c562d618852cb0383b89fe6e.html) | failed | passed | failed | passed | passed | ❌ |
+| [Failed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/c1570fd31970f22abcca6f32d75c1906058c1535.html) | failed | failed | passed | passed | passed | ❌ |
+| [Failed Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/cc73351605ff3dc9766ad28a1a267a96976ad77b.html) | failed | passed | failed | passed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/322c1a6d65f31fd534b1ddac680e3c6ea69e3207.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/9d8527dff8e8dcd338fc501863c14c13cd151b9c.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/8b1cde6d65f14bd7531e3714779b5130dc8a7919.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/bd0d0d0cda19a4d58dfe311cd7c8de34093ad590.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/7ce0b9a2a11f1c10f71f1786e4154e6164356fb6.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/f417fbb0db2a62f84dd79497b23b1e6e97007740.html) | inapplicable | passed | passed | passed | passed | ✅ |
+| [Passed Example 11](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/d36abfa44924a4d4088bada05f439ae392dfd662.html) | passed | passed | passed | passed | passed | ✅ |
+| [Failed Example 11](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c487ae/7b3b94c0e39bed9d432f379efa77ba9f54c81c6d.html) | failed | passed | failed | passed | passed | ❌ |
+
+### 規則 13：Element with presentational children has no focusable content
+
+- **ACT Rule ID:** [307n5z](https://www.w3.org/WAI/standards-guidelines/act/rules/307n5z/proposed/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/ccaf2315b5268a447dff07aad635b3ad27aabaf8.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/9bdea8c670e441afe5299bed4ea02b304becaaf8.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/8c835039e68f3fefc58e8b0985b2060fa02b3480.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/3798f2c4c821019fe59bbcc671d46b4e9d2c9d50.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/b9f6f775efc8d7cdc38782087ccc6abaa88babb6.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/61a402c2eb82ccb8614aa62918cff81b8306ddf2.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/54cd6b714326ddf6ae1181112d6ce35f6f3e3579.html) | inapplicable | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/ede992d9573d350db7cd0cb8685de5b96460fbc1.html) | passed | passed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/7bfb3a2d5783ade108f4f9fee10597a2343f8665.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/ad7e2441b992318debdeec5a07f92b0241f80a14.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/837f998533e07e309d5f9a587b7a5ff013a73c7a.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/307n5z/e687f56e16c718c737b2ebc096ab768bd9d87d50.html) | inapplicable | passed | ✅ |
+
+### 規則 14：Headers attribute specified on a cell refers to cells in the same table element
+
+- **ACT Rule ID:** [a25f45](https://www.w3.org/WAI/standards-guidelines/act/rules/a25f45/proposed/)
+- **FreeGo 檢測碼:** `HM1130101C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.3.1 → Reported: **1.3.1**
+
+| 測試案例 | 預期結果 | `HM1130101C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/f99c8bd6aa53c3b2f4d63fee994333453df410c6.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/1400d13aa5a86dbacf71db631f5de1abfc982094.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/8391fee07d35c11cfb3fecd19ddaad0fb8c68871.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/c02748c85d58e188b3c13773986272df616b2f3c.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/d935494fdcd2c1fef14d14842c0a19c8f8c54c78.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/ba5019010a6e0cfbcb46b2f7e9e63a6117e06f97.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/b1b17ab86ee2ebce350af1c41d2e6ff8911a33f1.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/7291b4b36dfa21e666a765a51c01e777d40a5174.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/7f2be26b42fa5846a09019bb949c44be95586e0d.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/cd25fd6cc4fde1734fc90c2f11e71886e3458007.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/d0c53c06c9e0a766fd5830fbbaa7df76f8cef92a.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/1bdbd209a611d68876d5b6e37541f7ddc2038f97.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/9f7979f4854efa0b1ac299f920229d20246710b9.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/09d9fb1862a6f579a948259a44e1117af595d937.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/76b79146e3be6b8ea6920df93b68352b8b9d3c8b.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/57382c6bd42af05f3b9836a95bee672d1b9330d7.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/e6fd17797e01f46032b6d8edf24831b2775cc831.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/cb36dcc6ce2d1787e287ff967559b186eb77d6bd.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/a25f45/add6f67d15c10ce6195ff5488ae7f5dab8bc3632.html) | inapplicable | passed | ✅ |
+
+### 規則 15：Element with aria-hidden has no content in sequential focus navigation
+
+- **ACT Rule ID:** [6cfa84](https://www.w3.org/WAI/standards-guidelines/act/rules/6cfa84/proposed/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/5bd22090d0f74dcea752749ef4ad8411e3772535.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/9f9f5e323450f4c0bd5445597a39d160ce07ff48.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/3c48f0e596f96b4bb701943356b6c179f41d383c.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/d343bc6a2877b62d80153453c3781debc33e0b1d.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/85a2d2ea8aeb1eddb5a6576edb958c2d1597ddfc.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/2dcf10cb4314dd7964dd38c2afe7d399bfcbcfac.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/4e7955d592cbf361a55113fcd4524e979b16bb08.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/2adaacc2f7b8d7a0d2d1496ad6f56aafd171f7fe.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/7d1d269e9ff9a8f396b2d638103379b6cf937225.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/d0b1b435bb2757bab5f644e53a273a9f50c8bc2c.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/9cc94f9f9549ef0c9fc0433e22e4fe59843d1b2a.html) | failed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/9812d828fef2da32081f4c0acce0c58912f071cb.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/afb819d4c7cfdf8fc468bb2297da3247fb5ac056.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/22d7a78f0d6680f70dae9cc412f496450a2acf4e.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6cfa84/4d71a1ad253efab083f05dc558656d94eb430ca7.html) | inapplicable | passed | ✅ |
+
+### 規則 16：Object element rendering non-text content has non-empty accessible name
+
+- **ACT Rule ID:** [8fc3b6](https://www.w3.org/WAI/standards-guidelines/act/rules/8fc3b6/proposed/)
+- **FreeGo 檢測碼:** `HM1110105C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.1.1 → Reported: **1.1.1**
+
+| 測試案例 | 預期結果 | `HM1110105C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/2c4e13b6606b88bbe10bfffbe4b6f4e6d373c4a7.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/dd651de8f984bc2bc5d791eceedf16e70cca0cdc.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/1b172036f8e219ef9b6f591d7f5df26e4ba11327.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/c3ed1c920db04a7b13d043fae5766694cf50d561.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/4147da2dd50e2326a7985207296cfcd0ba57a1ee.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/8bd420282f8209ce236004c61bc4bbd728afceb7.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/0f4a37cd30bd688d1a8ebbb915b2c70a4bf0272c.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/dcb42362e4cd8108444dd64c8538ef0523de0aa7.html) | failed | failed | ✅ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/a2525d7f2db0db246df0a702416606c56085a17a.html) | failed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/f6b0a52f8bb37ab0a8b290237add5be669a28b2f.html) | failed | failed | ✅ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/fd273c99d6129f0972ffdbe529b2b1cfa1116cf0.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/84c10ba8bc5570e900a60a2e29b319e68fc093da.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/52ac3fd2be278ede2bb32987a32673c6d5ee5edb.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/90927d72c81e9a9b27034a1a99adbab46c86e196.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/511c1b1647549d8af305f68253dda6d4161bd9bc.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/852f57fb1f11a0a58d288746c14d52ce8f8dd97a.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/fac8b25d43d0bbea83f5fe8c5fddf1b3566ac1fb.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/8fc3b6/25b2c00b86322f15c0cbb376b58b342fff916f62.html) | inapplicable | passed | ✅ |
+
+### 規則 17：HTML page has lang attribute
+
+- **ACT Rule ID:** [b5c3f8](https://www.w3.org/WAI/standards-guidelines/act/rules/b5c3f8/proposed/)
+- **FreeGo 檢測碼:** `HM1310100C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ✅ Consistent
+- **成功標準差異:** Expected: 3.1.1 → Reported: **3.1.1**
+
+| 測試案例 | 預期結果 | `HM1310100C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/0fac26928e2bf6b7db6c7f46a1e0ab50aaa8a7c1.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/473352935acf2463b14dbd8e38073e913eeb5c08.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/98681b2a7949e49b2da1b353f70e688528fe7ddc.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/4ea0280617a1b71dcc327356484f8767919b0f40.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/4f94c3e26f43701d91db403fe26cd8894bdc8ccf.html) | failed | failed | ✅ |
+
+### 規則 18：HTML page title is descriptive
+
+- **ACT Rule ID:** [c4a8a4](https://www.w3.org/WAI/standards-guidelines/act/rules/c4a8a4/proposed/)
+- **FreeGo 檢測碼:** `HM1240200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.2 → Reported: **2.4.2**
+
+| 測試案例 | 預期結果 | `HM1240200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/c19c231ab5175fb62b6a74b998aec0dd965c25c5.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/107a5e462b4ad6dd297742a2a177e24d32d27c26.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/2f9709573bf080a0feccfb2fd4b4a657383ef235.html) | passed | failed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/2c1397032aad720fe43dee2be0d326be56957320.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/1844d7bce889d85a80b620468baa804eab3ff2c8.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/c4a8a4/4c72b3b9b06bf1edc3c959070731b65871ee0c8f.html) | failed | passed | ❌ |
+
+### 規則 19：Image accessible name is descriptive
+
+- **ACT Rule ID:** [qt1vmo](https://www.w3.org/WAI/standards-guidelines/act/rules/qt1vmo/proposed/)
+- **FreeGo 檢測碼:** `HM1110100C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.1.1 → Reported: **1.1.1**
+
+| 測試案例 | 預期結果 | `HM1110100C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/af4423575333947073fa3729f502ff0a0c6c2fbf.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/5d314574052bf16676abb0e9a67e48dd70116c2e.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/2a66c7b8d8ef78d350b1c995e0ad232008f6564f.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/485f10faf222cd48fea2ab3ee79c2d354e51ea33.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/2f7d82593e287df64b7459695e355a840254255c.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/bac67a5a2ada971100bbec89961ad3e6c869f268.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/0ab8d652533229aae98191a6a43c2168e1959963.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/ce2c30787caebdf1d6adcd6aedfac8fa8842a9c4.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/4629221e66963f356b68f6e17dacea9a937fe7d3.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/9f373a7eca6b3dc1089e76fa275cdb63c7a8d4b6.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/2e1787fbc8a76fd8a2f8cae08d72097dab75abfd.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/e3fa823fa9ba97ac106cc8d13f2ba7e771cb9c75.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/4d04a4946e1f06834c89b91f0a765367f9d0d492.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/d5ce8939312a4c283084d0a7fdc7dd4cf6b35d4f.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/8ff1c1f8ce6c58b66365fd70f6828a89527874e3.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/qt1vmo/a09270ba161c0259b258844551e94c40cdd6b52e.html) | inapplicable | passed | ✅ |
+
+### 規則 20：Element with role attribute has required states and properties
+
+- **ACT Rule ID:** [4e8ab6](https://www.w3.org/WAI/standards-guidelines/act/rules/4e8ab6/proposed/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/eadf2a087a82575bcdf9f9158e698a576e9627c8.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/5b39aa37000933c7b9a766970b829ce5fada62d6.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/11c5321c05c7b83b8707eee76574a94bd44033fe.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/3da0918b07e5736d55b4b405a22860d889931c15.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/58a35afd2998bb6f9c670cb74fa7b550e80897b4.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/986038d85467255cef4ed7d72c231442427ece23.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/80462b7b8c490305d1de7e3136c0bcfaef31789f.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/907f05aed287f7407d5f95e7d39bfc1435ec0812.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/9bb1bdb3e95aa9b895fc4f32b0c2cfc917a07a72.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/43af91df529613e51429e18d43ce3df99b189c0f.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/7a1942d2d52f50c5df458877a0ee18dc5a22b0c3.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/9d80b71ad39b258fb75db804867f189d76ecdab8.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/c43c9679072e95ce85f8a7cb7581e991e73124c7.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4e8ab6/f473186fa351637a3c034b2df567239a39a8139c.html) | inapplicable | passed | ✅ |
+
+### 規則 21：Summary element has non-empty accessible name
+
+- **ACT Rule ID:** [2t702h](https://www.w3.org/WAI/standards-guidelines/act/rules/2t702h/proposed/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/174322a2ade5e022c611bdb8389419ce299e3267.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/83d39ed6bf5538f6d251150530112b9f66fca6fa.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/61d7129d076b8cc168168d92734e1ae6ec72cf59.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/b1c41028fa588755e96a256917da173183aafeca.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/d165641d4faa4b52b97ef661f94b9f7d039c63f7.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/f0f5f9e727e46e257e5d6420a8ab11b760c75617.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/a7fd233a404e737baaee10e34c35e40bbe7f14bb.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/f76f484c92eec764dbd1ee3e5ee3421f230a56d7.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/d0f1dd469c5e48feec2db9ef84a98e143212f574.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/eb98ae3dbf17cb6ca91f27b0ae8d9d05f81cbb4d.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/8d8611c7fdca07f6aa3bf3df3850921b9a35356b.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/2t702h/2fb5a6c2e2e4f6c70ac9e26f2d0617892972cd56.html) | inapplicable | passed | ✅ |
+
+### 規則 22：ARIA state or property is permitted
+
+- **ACT Rule ID:** [5c01ea](https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/)
+- **FreeGo 檢測碼:** `HM1410200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/4240276511703c9bfa881ac80f7c0af5c92c97cc.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/f91d77e96c069380252b674faaf08eecab375503.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/fec2c81ca23a9647c00ccd1fb5e74d06841ed6fa.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/655b73c1435335a6a16852210787dc3621e73cef.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/b67ab9861299ffa342880729ee1dbb43d2068a6b.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/d5503ef9eb5b1a3144451f5c3a680548343c9981.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/556a7ba560d3d3ab0b78fabb46037ac4dc192fd9.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/b7736b7dffe6fc6924374d4542b0c5ce3b9456cf.html) | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/6c0718872b1d915b49c48fe135b9fc251bcff561.html) | passed | passed | ✅ |
+| [Passed Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/d934cb530f9bd82f0c84615dfc405efad9b1fc69.html) | passed | passed | ✅ |
+| [Passed Example 11](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/0401164ef77abe96fd6502d35ed04952a057a8fe.html) | passed | passed | ✅ |
+| [Passed Example 12](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/5f9eefc34edefab96f156894ecbd1c0b5781045d.html) | passed | passed | ✅ |
+| [Passed Example 13](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/2c80908133ee63545a20ea45952de6f7d6cf845b.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/5e4eedbbef33766005c6f92c3dede1b1b40a2dac.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/1449cc0526959d274a89345e9b479846577aac5c.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/2d40412f73292f3e93ce605ad5329f3ffed78ed3.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5c01ea/e579177e7523653931efe361e37df7766f37b712.html) | inapplicable | passed | ✅ |
+
+### 規則 23：Document has heading for non-repeated content
+
+- **ACT Rule ID:** [047fe0](https://www.w3.org/WAI/standards-guidelines/act/rules/047fe0/proposed/)
+- **FreeGo 檢測碼:** `HM3241000C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: None → Reported: **2.4.10**
+
+| 測試案例 | 預期結果 | `HM3241000C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/c67821f1bd796c8dcabd5fd32c647780fa324e27.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/9b25d8065dc0ba59bf1c282efb27dcd81298fed4.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/8e7af0a95841a94b2d1dbee0860b4719c2085945.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/33fcbdf68c75e943ae8d5de5263727aab10d69da.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/7dbc8fc06d40789fd72f5987a5fe5b4f6f19bb17.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/b1f24e66c3ddbef136ffacb10264a80109fa6d57.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/f8146acb3179c3ac33f415443099748f7d859e29.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/8b97b5f8afb0bc447ced6a081d3a9c1dd2152c67.html) | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/4f112d2707661d579bb0e364ef6241ea6217d3e8.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/7505d097f7d59d71dc7eb8f7ab82c5682def54d4.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/81d501e52085d9e5712e241bdd24708e7cb4a301.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/929079705b1789667853e023b818eb4101630700.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/047fe0/4e34cac08353c5383b8743bffada2aaf3a780149.html) | failed | passed | ❌ |
+
+### 規則 24：HTML element language subtag matches language
+
+- **ACT Rule ID:** [off6ek](https://www.w3.org/WAI/standards-guidelines/act/rules/off6ek/proposed/)
+- **FreeGo 檢測碼:** `HM2310200C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 3.1.2 → Reported: **3.1.2**
+
+| 測試案例 | 預期結果 | `HM2310200C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/ec40c0a032b11cabc03d71b6884ab9b85ee160ad.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/df9260fddb4d08ca0669bea363828d089b36317b.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/5532e66ea71ed1f352f9911e224cbf290c7cc8e6.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/53d05e6fdcc63ff61ef1e5ea8454eea318aa038a.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/61c507e0aab456cce20538400fc1067be37953a0.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/5b88bdc5f7d936eaa1fdd2f5f8fdd4022548d5ac.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/ffcbd35493c91b4d8ee42c3a7fba9c2356144257.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/d00a83015b309b51bebfc2c85f62488daec3a5d1.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/895a754e85f4fbc8e11cea52295381f41eb384ca.html) | failed | passed | ❌ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/1aebc3e73c262d1417cfffd8c6e50cfb5fc37f82.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/cc8b4db7f82f4095bc010311b00c73091e427302.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/39063a3b4d2872cbadefc9e252d0492ba44ff74f.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/off6ek/9fa4aaa2575cccf2f83db23b8a66a584cee96486.html) | inapplicable | passed | ✅ |
+
+### 規則 25：HTML page language subtag matches default language
+
+- **ACT Rule ID:** [ucwvc8](https://www.w3.org/WAI/standards-guidelines/act/rules/ucwvc8/proposed/)
+- **FreeGo 檢測碼:** `HM1310100C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 3.1.1 → Reported: **3.1.1**
+
+| 測試案例 | 預期結果 | `HM1310100C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/96785fb73282803fa4ca791ffdc0c3bc46b90702.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/cd7898c9fcd7d06565cd55393310c2600ffc070f.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/5f654ecf0b7a0af4d0ba120a5cd1db2761ffa79c.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/a67210a4d3e4db840309518c1ec557459b709206.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/b1a2ce0c3435765e96d31a3262f1ed8c1d92f817.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/6616b9ffd712e7789c50b01da8420fd665786677.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/61b97f487132c7aca3dd9787e9ff1454903d45fb.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/c4eaf50df4fa37f931374c74ac369a018b780ec6.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/864ccfb9bdb2c7f797602c5e4f25d1a0ad2aad7c.html) | failed | passed | ❌ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/941efb7368e46b27b937d34b07fc4d41da01b002.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/dbc6a8459d78e618aab31e7051b4ce69b59c7f2f.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/80e6225b051ac34c23c7c0ede7d28d426d1be084.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/0f73e7179e17f050380f0ea350d2551611820fd5.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/ucwvc8/b64d767d873269ff00966630e34ab198fc24368f.html) | inapplicable | passed | ✅ |
+
+### 規則 26：Iframe elements with identical accessible names have equivalent purpose
+
+- **ACT Rule ID:** [4b1c6c](https://www.w3.org/WAI/standards-guidelines/act/rules/4b1c6c/proposed/)
+- **FreeGo 檢測碼:** `HM1410201C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410201C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/08c5575023e8bf16caabcf01a1c8d40fe6ecaf94.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/40e3400d782be79d036ea5119ff231acb7884f21.html) | passed | failed | ❌ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/f8d3c1afa946cf4fc97ef799aad6d9d090de6e8f.html) | passed | failed | ❌ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/380a799833429075d0e99667d1e0021008aab386.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/72d5c95606c82e7570f3496c4cc02512b639aaf3.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/5741786806bd13c329e3681a0e16f4ed326d7fee.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/1fe7e9b43510e6e25007a67611a5a0ace14c1fd0.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/0b43ded650d5794255c23f97f2f1a39d9a19be4b.html) | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/96600720258c71d467d82fda5d6d0037b7780ec3.html) | passed | passed | ✅ |
+| [Passed Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/21d4d4b931e9f06b5c4a008cb1989aa195c107b6.html) | passed | failed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/c1cc2a71e88c5fec2bc41175d63339404747bf00.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/ac65ce86f38bce79d12b797567bb8d85875aab88.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/4d33680e81b31e47fc46d3b6543cc050e369525b.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/486f868f7a1f41507a2bc214eb94087a8e906b4c.html) | failed | failed | ✅ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/3482a8bfa5017d02f2fc3d8a01560837b23ee9dd.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/bca9ffacff48445c9e4439b0611b4470c370e6ee.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/5aae37ddb5b9d51a41f090581101c1e6a4ee1763.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/2c65e532caf63bbf142e3bb8310f282366343ebb.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/8d7d93263c8a22831292a0ac15ed4734d6c63b3b.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/497ad0044eedbb3a36326f153147a271f1619c71.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/f686e5e01a34866c49dabed05e5a840873c3c708.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/8f35b76114d0dd59fcd78d46c7af113838cc99ea.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/4b1c6c/ab3046bbe77ef23bb7b5ce9f79f53230e0a6a7d0.html) | inapplicable | passed | ✅ |
+
+### 規則 27：Iframe element has non-empty accessible name
+
+- **ACT Rule ID:** [cae760](https://www.w3.org/WAI/standards-guidelines/act/rules/cae760/proposed/)
+- **FreeGo 檢測碼:** `HM1410201C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 4.1.2 → Reported: **4.1.2**
+
+| 測試案例 | 預期結果 | `HM1410201C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/fbf477c0e122dc4c283cf7b9a5cb7c2802f6e4c9.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/4075167ff3009336f6b8e87774a297de217a09b5.html) | passed | failed | ❌ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/99f10671a6d11813673cd05b0a0c82169c3ec821.html) | passed | failed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/bbbf921f8ee99ea733ef46b1e28c833ae5212abf.html) | failed | failed | ✅ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/c7e0fce611f126d32f7e10200fdffd4cb5b5ceec.html) | failed | failed | ✅ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/5090c2468b8947fdab34a7537029658f022e983b.html) | failed | failed | ✅ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/0a18c94e7b8bd8d0a54c14acbc56958918fcad2b.html) | failed | failed | ✅ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/ee525eaa03d462065eabd24ad6fbe0ab78fdb04e.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/555b35aa0e1cba408f86a4cc85cb5f0101627093.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/77075e0f50c9b77457d90450bc31c0fae372dbaf.html) | inapplicable | failed | ❌ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/cae760/058668cee446d08989bf24d5ce3413dc2cda9975.html) | inapplicable | failed | ❌ |
+
+### 規則 28：Image not in the accessibility tree is decorative
+
+- **ACT Rule ID:** [e88epe](https://www.w3.org/WAI/standards-guidelines/act/rules/e88epe/proposed/)
+- **FreeGo 檢測碼:** `HM1110106C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.1.1 → Reported: **1.1.1**
+
+| 測試案例 | 預期結果 | `HM1110106C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/9554e68de401c2912fd4895b6c062cd5ec2734b2.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/2a5ee04e97e798e6e08c3afb92f3b44d49ac13fa.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/57982b4d5dad90f3f2c06d5e0233694c46842bd0.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/395965215132ccf7f66c0c464c12bd48f416b1ca.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/59911c86fd770ba2c98dc1c669f9003c2c7e71ac.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/e5b8fa7ab66409e7b52b335a8b6aebe11fd78635.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/5d0c52f3b06b60f712efaa08eb6947f18494c241.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/9ff50232e74195770418bcfb23c1508dfcef639a.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/0d0061ffdf406f0d9b21aaa00f5d557e4137e0b2.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/6d108d00cc7a54f66547f02d7e7606342b11f801.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/ebd0080bacb8debc7ad069072240657df38c3e2c.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/f9c84eeeb2ab4f07802f2739786dfda1d8f974a0.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/410778b7d0c30044bfafed29789220f4b7ca98f1.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/9f5f3718830124266a4866dc42f539a5a03e37e5.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/41452bcdbcb440d3f741c74fcc885a93c68d63ce.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/918a4aecd343530c1d3d2160b4015a74a5ad55f7.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/5b2b8357b761ba5ad2753c322f3120442b0b8ab8.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/5e61a02512d3de1b3b0c3f32b4f6c30634108e29.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/a09270ba161c0259b258844551e94c40cdd6b52e.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 10](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/e88epe/8ff1c1f8ce6c58b66365fd70f6828a89527874e3.html) | inapplicable | passed | ✅ |
+
+### 規則 29：Link is descriptive
+
+- **ACT Rule ID:** [aizyf1](https://www.w3.org/WAI/standards-guidelines/act/rules/aizyf1/proposed/)
+- **FreeGo 檢測碼:** `HM3240900C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.9 → Reported: **2.4.9**
+
+| 測試案例 | 預期結果 | `HM3240900C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/c7661d61606728f898297f6e69f68af3d5b6c6d0.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/9863e3ea603a1bdde28e5b94f8675579e33a16d7.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/2eb4856e68c4cf8b3ed55f7d34b08ad4ae8b3fdd.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/474db50232349ade7714e41c88af801d1f1e378b.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/b2a671d96ac510ccc6e34dd58a141d13bb196508.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/bf3ba787eb7a6819ea1a6adccdfd1f30842ed788.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/e6a7c924092d2351c3a5b4361ccde7917ad23c66.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/771c36b9967faec9926af86041d834b4a108a52e.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/b130285915a8ca42926a11553a5791f44b65d487.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/e64416f9e9792cd76b77ee209a26269d47c3ff97.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/afcf56e62d62b8f69b4a2881475f625a1ed7ecf9.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/aizyf1/ca563b842b32b8fc79ac872f8fc4e799fcf76072.html) | inapplicable | passed | ✅ |
+
+### 規則 30：Link in context is descriptive
+
+- **ACT Rule ID:** [5effbb](https://www.w3.org/WAI/standards-guidelines/act/rules/5effbb/proposed/)
+- **FreeGo 檢測碼:** `HM1240401C`, `HM3240900C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.4 → Reported: **2.4.4, 2.4.9**
+
+| 測試案例 | 預期結果 | `HM1240401C` | `HM3240900C` | 一致？ |
+|---------|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/c7661d61606728f898297f6e69f68af3d5b6c6d0.html) | passed | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/9863e3ea603a1bdde28e5b94f8675579e33a16d7.html) | passed | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/771c36b9967faec9926af86041d834b4a108a52e.html) | passed | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/2eb4856e68c4cf8b3ed55f7d34b08ad4ae8b3fdd.html) | passed | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/b130285915a8ca42926a11553a5791f44b65d487.html) | passed | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/a1e9ff296f0728e180aeb920beacb26bf88ddb12.html) | passed | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/474db50232349ade7714e41c88af801d1f1e378b.html) | passed | failed | passed | ❌ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/e4f70ef2843c6239d0bebe46b97a682bd901e749.html) | passed | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/4e89fcc7903980482fe12350f864ca75963d6efd.html) | passed | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/b2a671d96ac510ccc6e34dd58a141d13bb196508.html) | failed | passed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/bf3ba787eb7a6819ea1a6adccdfd1f30842ed788.html) | failed | passed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/e6a7c924092d2351c3a5b4361ccde7917ad23c66.html) | failed | passed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/98f0638a038a244b0bde70ff316cde1be7ce9a3b.html) | failed | passed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/43730455b69439980b95151be477ca594e0d7556.html) | failed | passed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/45d884e81c4ef8234cfbd85d259dd6a64685c9d2.html) | failed | passed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/e64416f9e9792cd76b77ee209a26269d47c3ff97.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/afcf56e62d62b8f69b4a2881475f625a1ed7ecf9.html) | inapplicable | passed | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/5effbb/ca563b842b32b8fc79ac872f8fc4e799fcf76072.html) | inapplicable | passed | passed | ✅ |
+
+### 規則 31：Links with identical accessible names and same context serve equivalent purpose
+
+- **ACT Rule ID:** [fd3a94](https://www.w3.org/WAI/standards-guidelines/act/rules/fd3a94/proposed/)
+- **FreeGo 檢測碼:** `HM1240400C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 2.4.4 → Reported: **2.4.4**
+
+| 測試案例 | 預期結果 | `HM1240400C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/c6927fede2d5da439b2d346f39d2ec8980212b31.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/e0d32d9583b2b545ca76295cff78e016a44854b6.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/91abed1247fb6c9314457a6738343493056fe3bb.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/8e6c190e0d2ba8f37707910bd1b984b6885ab548.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/b55973d2f813b2fa7d0841202c13f65e41ca8823.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/19d5c2888e4434b3e0fb2d9ea5818808e8380422.html) | passed | passed | ✅ |
+| [Passed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/fb1e5016cd1630a2839dc7d70d503babd2ccfefc.html) | passed | passed | ✅ |
+| [Passed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/0c9cee5afaadc35a08ce533448f02b50d6526eda.html) | passed | passed | ✅ |
+| [Passed Example 9](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/228c0a3d78557fb48a855d6733d50848a86f0d62.html) | passed | passed | ✅ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/9ceacbea5df44a14dc17df2089edb134f22decd3.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/8dc58c481c594488a331cd267974a324b97c9c98.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/ef75d42424140b163d7939aacc6a80c8dbc8816a.html) | failed | passed | ❌ |
+| [Failed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/f92350be3a294ad1a41de6d7202f09bdd4e5d6c0.html) | failed | passed | ❌ |
+| [Failed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/0b01e772dff47d4fd971ca4cfda2a9810843c10a.html) | failed | passed | ❌ |
+| [Failed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/dddcd76a61f61fa6652f847b66cd77fdcf7724cf.html) | failed | passed | ❌ |
+| [Failed Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/7ebe961dbb4fb0e259fc3bc98a8f048170b063af.html) | failed | passed | ❌ |
+| [Failed Example 8](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/1379913f0770843f89d37ceaad3a63e36f07924e.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/547d69dca1d88658ee7036136b8cd29e05a28823.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/4902c330569df88302c98581dcd6c1a449e72783.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/3d342b4c04e69cdfaa26d6258275ec9807903d56.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/ea07736554f372e47c098f3cb946d0bbbbd22d82.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/a799c111fc2dd2b2e6dade9bf227790d8cb33f68.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/58087cbeb108ebf723ffc232c9996123a6eb168b.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/fd3a94/9abd9bcfa7c5eb5000df1bd7e72440c6233566a5.html) | inapplicable | passed | ✅ |
+
+### 規則 32：Table header cell has assigned cells
+
+- **ACT Rule ID:** [d0f69e](https://www.w3.org/WAI/standards-guidelines/act/rules/d0f69e/proposed/)
+- **FreeGo 檢測碼:** `HM1130101C`
+- **規則邏輯文件:** https://accessibility.moda.gov.tw/Accessible/Guide/68
+- **一致性:** ⚠️ Partial
+- **成功標準差異:** Expected: 1.3.1 → Reported: **1.3.1**
+
+| 測試案例 | 預期結果 | `HM1130101C` | 一致？ |
+|---------|---------|---------|-------|
+| [Passed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/4d021e317ad660d19925651ead361fcaf474dc76.html) | passed | passed | ✅ |
+| [Passed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/be8acb4fa0dd3057dd28f7cc43e64a95eff15ac6.html) | passed | passed | ✅ |
+| [Passed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/9fbe21d1ffdb176ef89afc95cc3f4f666353ee25.html) | passed | passed | ✅ |
+| [Passed Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/4dba1a02d3852eecca6f2f50e1812bce802a42de.html) | passed | passed | ✅ |
+| [Passed Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/28e0234356523086d570a5b8f959e8cc5ea6b4a6.html) | passed | passed | ✅ |
+| [Passed Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/47a80af86b4ea6357997fa76a62cd55dcb8f2fe7.html) | passed | failed | ❌ |
+| [Failed Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/664972feaac1097f9365d73aac844c81fa927fa2.html) | failed | passed | ❌ |
+| [Failed Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/6bb6ca5dcdbd1fef063561f61de88740db24bd5d.html) | failed | passed | ❌ |
+| [Failed Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/1a0ee1b5549d2f1eebd337e85cae8487331ab723.html) | failed | passed | ❌ |
+| [Inapplicable Example 1](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/7ab8f027dde4ee91a2b45b52a61cff442ec676d8.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 2](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/b52547570de8121323bf0cc9ead85422309fa260.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 3](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/c03135d1a5242415c66ff2ae561683eaf63e48d0.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 4](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/0c9e4e7e3f2b739bb6dbd1f0b54bc691e6e3f1df.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 5](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/86e5df7afd4815371b086d53db45901640bb4b53.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 6](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/8177b424b0a57eecc5f80cc6a30d1073493e16b3.html) | inapplicable | passed | ✅ |
+| [Inapplicable Example 7](https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/d0f69e/0c53e1a110f5191e74bd97da2c92c79c40d76eb2.html) | inapplicable | passed | ✅ |
+
+## 摘要
+
+| 指標 | 數值 |
+|------|------|
+| 已實作規則總數 | 32 |
+| 完全一致規則數 | 1 |
+| 部分一致規則數 | 31 |
+| EARL assertions | 651 |
+| 已核准 testcase | 479 |
+| 一致 testcase | 317 |
+| 不一致 testcase | 162 |
+

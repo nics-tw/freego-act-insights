@@ -1,0 +1,20 @@
+node_modules/
+
+# macOS metadata
+.DS_Store
+
+# Local test output
+test-results/
+coverage/
+
+# Downloaded ACT test pages and per-run URL snapshot (recreated by --serve)
+examples/testcases/
+
+# Raw FreeGo scan input; keep generated, shareable reports under reports/
+freego-report/*.htm
+
+# Local logs and secrets
+*.log
+.env
+.env.*
+!.env.example

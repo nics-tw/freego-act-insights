@@ -1,0 +1,46 @@
+{
+  "name": "freego-act-insights",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent FreeGo ACT rule analysis, improvement insights and accessibility tool comparison reports.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "config": {
+    "TESTCASES_JSON": "https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases.json",
+    "TESTCASES_KEY": "testcases"
+  },
+  "scripts": {
+    "build": "npm run fmt && npm run lint && npm run test",
+    "lint": "eslint --fix 'src/**/*.js' 'examples/*.js' 'scripts/*.cjs' '*.js' '*.cjs'",
+    "lint:check": "eslint 'src/**/*.js' 'examples/*.js' 'scripts/*.cjs' '*.js' '*.cjs'",
+    "test": "jest",
+    "test:integration": "node scripts/verify-dependency-upgrade.cjs",
+    "update-act-rule-catalog": "node scripts/update-act-rule-catalog.cjs",
+    "update-act-testcase-counts": "node scripts/update-act-testcase-counts.cjs",
+    "fmt": "prettier --write 'src/**/*.js' 'examples/*.js' 'scripts/*.cjs' '*.js' '*.cjs' package.json",
+    "fmt:check": "prettier --check 'src/**/*.js' 'examples/*.js' 'scripts/*.cjs' '*.js' '*.cjs' package.json",
+    "example": "node examples/run.js",
+    "serve:testcases": "node examples/generate-report.js --serve",
+    "generate:all": "npm run generate-report && npm run generate-freego-markdown && npm run generate-improvement-report",
+    "generate-report": "node examples/generate-report.js --htm freego-report/freego.htm",
+    "generate-freego-markdown": "node examples/generate-freego-markdown.js",
+    "generate-improvement-report": "node examples/generate-freego-improvement-html.js"
+  },
+  "dependencies": {
+    "axe-core": "^4.13.0",
+    "axios": "^1.20.0",
+    "is-url": "^1.2.4",
+    "puppeteer": "^25.12.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
+    "jest": "^30.5.2",
+    "prettier": "^3.9.9"
+  },
+  "author": "",
+  "license": "MIT"
+}
