@@ -1,7 +1,7 @@
 /**
  * examples/run.js
  *
- * 執行入口：呼叫 testRunner，注入 axe-core，收集結果後輸出 EARL JSON-LD
+ * 執行入口：執行 ACT 測項、注入 axe-core，並輸出 EARL JSON-LD
  *
  * 執行方式:
  *   node examples/run.js

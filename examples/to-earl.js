@@ -1,11 +1,11 @@
 /**
  * examples/to-earl.js
  *
- * 將 testRunner 回傳的結果陣列轉換為 EARL 1.0 JSON-LD 格式。
+ * 將 ACT 測項結果轉換為 EARL 1.0 JSON-LD 格式。
  *
  * @see https://www.w3.org/TR/EARL10-Schema/
  *
- * @param {Array} results - testRunner 回傳的結果陣列，每項由 evaluate.js 產生
+ * @param {Array} results - 測項結果陣列，每項由 evaluate.js 產生
  * @returns {Array} EARL JSON-LD Assertion 陣列
  */
 'use strict'

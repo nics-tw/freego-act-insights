@@ -7,12 +7,12 @@
  * - 不能使用 require()
  * - 只能存取 browser API 及已注入至頁面的全域變數
  * - axe-core 須已透過 injectScripts 注入頁面（由 run.js 負責）
- * - window.testcase 及 window.rulesMap 由 testRunner 自動注入
+ * - window.testcase 及 window.rulesMap 由測試流程注入
  *
  * @returns {Object} 包含測試案例資訊與 axe-core 執行結果
  */
 module.exports = async function evaluate() {
-  // window.testcase 由 testRunner 注入，包含 { ruleId, url, expected, ... }
+  // window.testcase 包含 { ruleId, url, expected, ... }
   const testcase = window.testcase
 
   // 取得此 ACT Rule 對應的國內檢測碼陣列

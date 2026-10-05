@@ -51,7 +51,7 @@ Freego generates a single-file HTM report with hierarchical HTML lists:
 
 ## Architecture
 
-**Entry point**: `src/index.js` exports the async `testRunner(config)` function.
+**ACT test execution entry point**: `src/index.js` exposes the browser-based ACT test execution pipeline used by the optional reference example.
 
 **Core pipeline** (`src/`):
 - `load-test-cases.js` — fetches and filters ACT test cases from the URL in `package.json`'s `config.TESTCASES_JSON` (currently `https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases.json`) by `rulesMap` keys; supports `skipTests` and `runOnly`
@@ -61,29 +61,16 @@ Freego generates a single-file HTM report with hierarchical HTML lists:
 
 - `rulesMap.js` — maps 33 ACT Rule IDs to Taiwan MODA detection codes (e.g. `'23a2a8': ['HM1110100C']`); primary extension point, shared by both branches below
 
-**axe-core reference branch** (`examples/`) — shows the intended EARL output shape using an automated, non-Freego tool:
+**axe-core reference example** (`examples/`) — demonstrates an optional automated evaluation and EARL output flow, independent of FreeGo report generation:
 - `examples/evaluate.js` — reference `evaluate` function (axe-core); shows expected return shape
-- `examples/to-earl.js` — converts raw `testRunner` results to W3C EARL 1.0 JSON-LD (`earl:`-prefixed vocabulary) with Taiwan detection code metadata
-- `examples/run.js` — orchestrates: loads rulesMap, calls `testRunner`, writes EARL to `examples/results/output.jsonld` (`npm run example`)
+- `examples/to-earl.js` — converts evaluation results to W3C EARL 1.0 JSON-LD (`earl:`-prefixed vocabulary) with Taiwan detection code metadata
+- `examples/run.js` — runs the reference evaluation and writes EARL to `examples/results/output.jsonld` (`npm run example`)
 
 **Freego branch** (`src/` + `examples/generate-report.js`) — drives the manual-GUI pipeline described above:
 - `src/serve-test-cases.js` — `downloadTestCases()` mirrors ACT test pages locally; `startServer()` serves them over HTTP with directory listings for Freego's crawler; `localUrl()` rewrites a remote ACT test case URL to its local-server equivalent
 - `src/parse-freego-report.js` — default export `parseFreegoReport(htmPath)` parses Freego's HTM report into `{ pages: [{url, violations, timedOut}], timedOut: [] }`
 - `src/generate-implementation-report.js` — `generateImplementationReport({freegoPages, timedOut, testCases, rulesMap, baseUrl, freegoRevision})` returns `{report, summary, consistencyDetails}`; `report` follows the schema act-implementor.netlify.app expects (no `earl:` prefix, unlike `to-earl.js`). Also exports the `CONSISTENCY` enum (`consistent`, `inconsistent-FP`, `inconsistent-invalid`, `not-implemented`) and maintains `DETECTION_CODE_WCAG_MAP` (MODA code → WCAG 2.1 SC) used to populate each EARL assertion's `test.isPartOf`
 - `examples/generate-report.js` — CLI entry point (`npm run generate-report`) with `--serve` and `--htm` modes tying the three files above together; see Full pipeline above
-
-## Key Config Object
-
-```js
-testRunner({
-  globals: { rulesMap },          // required — ACT Rule ID → detection code mapping
-  evaluate: async function() {},  // required — runs in Puppeteer page context
-  injectScripts: ['script.js'],   // optional — injected before evaluate
-  skipTests: { ruleIds, testCases, fileExtensions },
-  runOnly: ['file.html'],         // optional — restrict to specific test files
-  debug: false,                   // true = non-headless browser
-})
-```
 
 ## rulesMap Format
 

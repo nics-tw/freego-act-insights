@@ -3,7 +3,7 @@ const axios = require('axios')
 /**
  * Load test cases to execute
  * @param {Object} options options to load testcases
- * @property {Object} options.config configuration object passed to testrunner
+ * @property {Object} options.config test case loading configuration
  * @property {Object} options.rulesMap mapping of ACT testcase Ids to Test tool Ids
  * @property {Object} options.skipTests list of testcases to skip from the ACT testcases
  * @property {Array} options.runOnly only run these rules

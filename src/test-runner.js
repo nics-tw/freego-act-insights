@@ -4,8 +4,8 @@ const loadTestCases = require('./load-test-cases')
 const executeTestCase = require('./execute-test-case')
 
 /**
- * Entry method for testrunner, asynchronously executes ACT testcases against a given test tool and retrieves results.
- * @param {Object} options configuration options for the testrunner
+ * Asynchronously executes ACT test cases against a given test tool and returns the results.
+ * @param {Object} options ACT test execution options
  */
 async function testRunner(options) {
   console.log('TestRunner: Start.')

@@ -3,7 +3,7 @@
  *
  * @description
  * 此檔案定義了 ACT-Rules (https://act-rules.github.io/rules/) 與國內無障礙檢測碼之間的映射關係。
- * TestRunner 會根據這些對應關係來篩選和執行相應的測試案例，並將結果對應至國內檢測碼。
+ * 測試流程會根據這些對應關係篩選測試案例，並將結果對應至國內檢測碼。
  *
  * @format
  * - Key: ACT Rule ID (6 碼字串) - 例如: '23a2a8', '5f99a7'
