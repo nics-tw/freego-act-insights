@@ -43,7 +43,7 @@ npm run serve:testcases
 
 重新掃描時，以新的報告取代此檔案；若要保留歷次原始結果，請先另外備份。
 
-### 3. 一個指令產生 HTML 分析報告
+### 3. 產生 HTML 分析報告
 
 ```sh
 npm run generate:all
